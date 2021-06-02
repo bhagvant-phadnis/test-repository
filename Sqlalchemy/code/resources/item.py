@@ -39,7 +39,7 @@ class Item(Resource):
         conn.close()
         """
         try:
-            item.insert()
+            item.save_to_db()
         except:
             return {"message" : "An error occurred inserting the item"}, 500  #server error
         return item.json(), 201
@@ -48,18 +48,11 @@ class Item(Resource):
     # delete item
 
     def delete(self,name):
-#        global items
-#        items = list(filter(lambda x: x['name'] != name, items))
-        conn = sqlite3.connect('data.db')
-        cursor = conn.cursor()
+        item = ItemModel.find_by_name(name)
+        if item:
+            item.delete_from_db()
 
-        delete_query = "DELETE FROM items WHERE name = ?"
-        cursor.execute(delete_query, (name,))
-
-        conn.commit()
-        conn.close()
-
-        return {'message':'Item deleted'}
+        return {"message" : "Item deleted"}
 
     def put(self, name):
 
@@ -76,20 +69,15 @@ class Item(Resource):
         return item
         """
         item = ItemModel.find_by_name(name)
-        updated_item = ItemModel(name, data['price'])
 
         if item is None:
-            try:
-                updated_item.insert()
-            except:
-                return {"message" : "An error occurred while inserting an item"}, 500
+            item = ItemModel(name, data['price'])
         else:
-            try:
-                updated_item.update()
-            except:
-                return {"message" : "An error occurred while updating an item"}, 500
+            item.price = data['price']
 
-        return update_item.json()
+        item.save_to_db()
+
+        return item.json()
 
 
 class ItemList(Resource):
