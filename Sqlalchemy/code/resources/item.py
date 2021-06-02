@@ -10,6 +10,11 @@ class Item(Resource):
         required=True,
         help="This fiels can not be blank!"
     )
+    parser.add_argument('store_id',
+        type=float,
+        required=True,
+        help="Every item needs a store id."
+    )
 
     @jwt_required()
     def get(self, name):
@@ -26,7 +31,7 @@ class Item(Resource):
 
         data = Item.parser.parse_args()
 
-        item = ItemModel(name,data['price'])
+        item = ItemModel(name, **data)                 #like, item = ItemModel(name, data['price'], data['store_id'])
         """
         conn = sqlite3.connect()
         cursor = conn.cusrsor()
@@ -70,7 +75,7 @@ class Item(Resource):
         item = ItemModel.find_by_name(name)
 
         if item is None:
-            item = ItemModel(name, data['price'])
+            item = ItemModel(name, **data)             #like, item = ItemModel(name, data['price'], data['store_id'])
         else:
             item.price = data['price']
 
